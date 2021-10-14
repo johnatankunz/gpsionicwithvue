@@ -1,68 +1,81 @@
 <template>
   <ion-page>
-    <ion-header :translucent="true">
+    <ion-header>
       <ion-toolbar>
-        <ion-title>Blank</ion-title>
+        <ion-title>Qual cidade estou?</ion-title>
       </ion-toolbar>
     </ion-header>
-    
-    <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Blank</ion-title>
-        </ion-toolbar>
-      </ion-header>
-    
-      <div id="container">
-        <strong>Ready to create an app?</strong>
-        <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
+
+    <ion-content>
+      <div class="container">
+        <h2>Coordenadas</h2>
+        <h3>{{ latitude }}</h3>
+        <h3>{{ longitude }}</h3>
+        <ion-button @click="buscaCidade()">Qual cidade?</ion-button>
+        <h3>{{ cidade }}</h3>
       </div>
     </ion-content>
   </ion-page>
 </template>
 
 <script lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
-import { defineComponent } from 'vue';
+import {
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonButton,
+} from "@ionic/vue";
+import { defineComponent } from "vue";
+import { Geolocation } from "@capacitor/geolocation";
+import { Http } from "@capacitor-community/http";
 
 export default defineComponent({
-  name: 'Home',
+  name: "Home",
   components: {
-    IonContent,
-    IonHeader,
     IonPage,
+    IonHeader,
     IonTitle,
-    IonToolbar
-  }
+    IonToolbar,
+    IonContent,
+    IonButton,
+  },
+
+  data() {
+    return {
+      latitude: 0,
+      longitude: 0,
+      cidade: ''
+    };
+  },
+  ionViewWillEnter() {
+    this.printCurrentPosition();
+  },
+  methods: {
+    printCurrentPosition: async function() {
+      const coordinates = await Geolocation.getCurrentPosition();
+      console.log("Current position:", coordinates);
+      this.latitude = coordinates.coords.latitude;
+      this.longitude = coordinates.coords.longitude;
+    },
+    buscaCidade: async function() {
+      const ACCESS_KEY = "33e72439933d8f0e72bff0671cae589f";
+      
+      const options = {
+        url: `http://api.positionstack.com/v1/reverse?access_key=${ACCESS_KEY}&query=${this.latitude},${this.longitude}`
+      };
+
+      const response = await Http.get(options);
+      console.log(response);
+      this.cidade = response.data.data[0].locality + ', ' + response.data.data[0].region_code;
+    },
+  },
 });
 </script>
 
 <style scoped>
-#container {
+.container {
   text-align: center;
-  
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-#container strong {
-  font-size: 20px;
-  line-height: 26px;
-}
-
-#container p {
-  font-size: 16px;
-  line-height: 22px;
-  
-  color: #8c8c8c;
-  
-  margin: 0;
-}
-
-#container a {
-  text-decoration: none;
 }
 </style>
