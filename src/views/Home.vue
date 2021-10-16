@@ -11,14 +11,23 @@
         <h2>Coordenadas</h2>
         <h3>{{ latitude }}</h3>
         <h3>{{ longitude }}</h3>
-        <ion-button @click="buscaCidade()">Qual cidade?</ion-button>
+        <ion-button @click="buscaSalvaCidade()">Qual cidade?</ion-button>
         <h3>{{ cidade }}</h3>
       </div>
+
+      <ion-row>
+        <ion-col>
+          <ul v-for="(cidade, index) in list" :key="index"> 
+            <h1> {{cidade}} </h1>
+            <p> {{ latitude}}, {{longitude}} </p>
+          </ul>
+        </ion-col>
+      </ion-row>
     </ion-content>
   </ion-page>
 </template>
 
-<script lang="ts">
+<script>
 import {
   IonContent,
   IonHeader,
@@ -26,6 +35,8 @@ import {
   IonTitle,
   IonToolbar,
   IonButton,
+  IonRow,
+  IonCol
 } from "@ionic/vue";
 import { defineComponent } from "vue";
 import { Geolocation } from "@capacitor/geolocation";
@@ -40,7 +51,9 @@ export default defineComponent({
     IonTitle,
     IonToolbar,
     IonContent,
-    IonButton
+    IonButton,
+    IonRow,
+    IonCol
   },
 
   data() {
@@ -48,7 +61,8 @@ export default defineComponent({
       latitude: 0,
       longitude: 0,
       cidade: '',
-      localStorage: new Storage()
+      localStorage: new Storage(),
+      list: []
     };
   },
   created: async function() {
@@ -67,21 +81,20 @@ export default defineComponent({
       this.latitude = coordinates.coords.latitude;
       this.longitude = coordinates.coords.longitude;
     },
-    buscaCidade: async function() {
+    buscaSalvaCidade: async function() {
       const ACCESS_KEY = "33e72439933d8f0e72bff0671cae589f";
-      
       const options = {
         url: `http://api.positionstack.com/v1/reverse?access_key=${ACCESS_KEY}&query=${this.latitude},${this.longitude}`
       };
-
-
       const response = await Http.get(options);
       console.log(response);
       this.cidade = response.data.data[0].locality + ', ' + response.data.data[0].region_code;
-
       this.localStorage.set('cidade', this.cidade);
       this.localStorage.set('latitude', this.latitude);
       this.localStorage.set('longitude', this.longitude);
+
+      console.log(this.cidade);
+      this.list.push(this.cidade);
       
     }
   },
