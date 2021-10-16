@@ -30,6 +30,7 @@ import {
 import { defineComponent } from "vue";
 import { Geolocation } from "@capacitor/geolocation";
 import { Http } from "@capacitor-community/http";
+import { Storage} from "@ionic/storage";
 
 export default defineComponent({
   name: "Home",
@@ -39,15 +40,22 @@ export default defineComponent({
     IonTitle,
     IonToolbar,
     IonContent,
-    IonButton,
+    IonButton
   },
 
   data() {
     return {
       latitude: 0,
       longitude: 0,
-      cidade: ''
+      cidade: '',
+      localStorage: new Storage()
     };
+  },
+  created: async function() {
+    await this.localStorage.create();
+  },
+  mounted: async function() {
+    this.cidade = await this.localStorage.get(this.cidade);
   },
   ionViewWillEnter() {
     this.printCurrentPosition();
@@ -66,10 +74,16 @@ export default defineComponent({
         url: `http://api.positionstack.com/v1/reverse?access_key=${ACCESS_KEY}&query=${this.latitude},${this.longitude}`
       };
 
+
       const response = await Http.get(options);
       console.log(response);
       this.cidade = response.data.data[0].locality + ', ' + response.data.data[0].region_code;
-    },
+
+      this.localStorage.set('cidade', this.cidade);
+      this.localStorage.set('latitude', this.latitude);
+      this.localStorage.set('longitude', this.longitude);
+      
+    }
   },
 });
 </script>
