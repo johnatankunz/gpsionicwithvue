@@ -17,7 +17,7 @@
 
       <ion-row>
         <ion-col>
-          <ul v-for="(cidade, index) in list" :key="index"> 
+          <ul v-for="(cidade, index) in list" :key="index">
             <h1> {{cidade}} </h1>
             <p> {{ latitude}}, {{longitude}} </p>
           </ul>
@@ -69,7 +69,8 @@ export default defineComponent({
     await this.localStorage.create();
   },
   mounted: async function() {
-    this.cidade = await this.localStorage.get(this.cidade);
+    const list = await this.localStorage.get('list');
+    this.list = JSON.parse(list) || [];
   },
   ionViewWillEnter() {
     this.printCurrentPosition();
@@ -95,7 +96,7 @@ export default defineComponent({
 
       console.log(this.cidade);
       this.list.push(this.cidade);
-      
+      await this.localStorage.set('list', JSON.stringify(this.list));
     }
   },
 });
