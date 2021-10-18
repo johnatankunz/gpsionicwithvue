@@ -9,17 +9,15 @@
     <ion-content>
       <div class="container">
         <h2>Coordenadas</h2>
-        <h3>{{ latitude }}</h3>
-        <h3>{{ longitude }}</h3>
+        <h3>{{ latitude }}, {{ longitude }}</h3>
         <ion-button @click="buscaSalvaCidade()">Qual cidade?</ion-button>
-        <h3>{{ cidade }}</h3>
       </div>
 
       <ion-row>
         <ion-col>
-          <ul v-for="(cidade, index) in lastFive" :key="index">
-            <h1> {{cidade}} </h1>
-            <p> {{ latitude}}, {{longitude}} </p>
+          <ul v-for="(cidade, index) in list" :key="index">
+            <h1> {{ cidade }} </h1>
+            <p> {{ latitude }}, {{ longitude }} </p>
           </ul>
         </ion-col>
       </ion-row>
@@ -80,25 +78,25 @@ export default defineComponent({
   methods: {
     printCurrentPosition: async function() {
       const coordinates = await Geolocation.getCurrentPosition();
-      console.log("Current position:", coordinates);
       this.latitude = coordinates.coords.latitude;
       this.longitude = coordinates.coords.longitude;
     },
     buscaSalvaCidade: async function() {
+      this.lastFive = ++this.lastFive;
       const ACCESS_KEY = "33e72439933d8f0e72bff0671cae589f";
       const options = {
         url: `http://api.positionstack.com/v1/reverse?access_key=${ACCESS_KEY}&query=${this.latitude},${this.longitude}`
       };
       const response = await Http.get(options);
-      console.log(response);
       this.cidade = response.data.data[0].locality + ', ' + response.data.data[0].region_code;
       this.localStorage.set('cidade', this.cidade);
       this.localStorage.set('latitude', this.latitude);
       this.localStorage.set('longitude', this.longitude);
 
-      console.log(this.cidade);
-      this.list.push(this.cidade);
-      await this.localStorage.set('list', JSON.stringify(this.list));
+      if (this.lastFive <= 5){
+        this.list.push(this.cidade);
+        }
+        await this.localStorage.set('list', JSON.stringify(this.list));
     }
   },
 });
